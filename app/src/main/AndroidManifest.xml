@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.runningappdaggercourse">
+
+    <!--To access user location, we need to request access to fine and coarse location. From API 29 (Android 10) onwards, we also need to request
+    background location access explicitly (as the user can choose to allow location access only in the foreground).-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+    <!--We will need the foreground service permission as well, to show a notification in the status bar, indicating that the app is running a
+     task in the foreground (like the type of notification media players show to display the current media and some controls). This permission is
+     required for apps that use services from API 28 (Android 9).-->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <!--We don't need to request internet permission here, because we are using Google Maps SDK, which comes with this permission, and it's going
+    to merge with this manifest.-->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.RunningAppDaggercourse">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">    <!--The singleTask launchMode is to avoid a possible problem of a new activity being launched, making us lose the data in the activity started previously.-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--For using Google Maps, we need the following meta-data:
+            *_ the version of the Google Play Services (included in the dependencies...somewhere)
+            *_ the Google Maps API key, which needs to be generated in the website https://console.cloud.google.com/, inside a project, in the
+                API credentials option-->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
+
+    </application>
+
+</manifest>
