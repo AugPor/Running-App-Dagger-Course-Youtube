@@ -25,7 +25,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RunningAppDaggercourse">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:launchMode="singleTask">    <!--The singleTask launchMode is to avoid a possible problem of a new activity being launched, making us lose the data in the activity started previously.-->
             <intent-filter>

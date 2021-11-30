@@ -17,7 +17,7 @@ interface RunDAO {
 
     /**Functions for sorting all runs according to parameter.*/
     @Query("SELECT * FROM running_table ORDER BY timestamp DESC")
-    fun getAllRunsSortedByDate(): LiveData<List<Run>>         //We can't use a suspend function for this case, as it needs to return a LiveData for us to observe and we can't do that in a coroutine.
+    fun getAllRunsSortedByDate(): LiveData<List<Run>>         //We can't use a suspend function for this case, as it needs to return a LiveData for us to observe and we can't do that in a coroutine (LiveData is asynchronous anyway, so it's not necessary).
 
     @Query("SELECT * FROM running_table ORDER BY timeInMillis DESC")
     fun getAllRunsSortedByTimeInMillis(): LiveData<List<Run>>
