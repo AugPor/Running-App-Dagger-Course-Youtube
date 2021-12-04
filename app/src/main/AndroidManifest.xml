@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.runningappdaggercourse">
 
-    <!--To access user location, we need to request access to fine and coarse location. From API 29 (Android 10) onwards, we also need to request
-    background location access explicitly (as the user can choose to allow location access only in the foreground).-->
+    <!--To access user location, we need to request access to fine and coarse location. From API 29 (Android 10/Q) onwards, we also need to
+    request background location access explicitly (as the user can choose to allow location access only in the foreground).-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
