@@ -1,5 +1,6 @@
 package com.example.runningappdaggercourse.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.runningappdaggercourse.R
 import com.example.runningappdaggercourse.databinding.FragmentTrackingBinding
+import com.example.runningappdaggercourse.other.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.example.runningappdaggercourse.services.TrackingService
 import com.example.runningappdaggercourse.ui.viewmodels.MainViewModel
 import com.google.android.gms.maps.GoogleMap
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,10 +50,21 @@ class TrackingFragment: Fragment(R.layout.fragment_tracking) {
 
         binding.mapView.onCreate(savedInstanceState)
 
+        binding.btnToggleRun.setOnClickListener {
+            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
+        }
+
         binding.mapView.getMapAsync{
             map = it
         }
     }
+
+    /**The sendCommandToService function will send the command to start, pause or stop the service by using an intent with an action.*/
+    private fun sendCommandToService(action: String) =
+        Intent(requireContext(),TrackingService::class.java).also {
+            it.action = action
+            requireContext().startService(it)               //Although it's called startService, this method will actually send the intent to the service, where we will judge if we have to start, pause or stop the service based on the intent's action.
+        }
 
     override fun onResume() {
         super.onResume()

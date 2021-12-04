@@ -35,6 +35,10 @@
             </intent-filter>
         </activity>
 
+        <!--To use a Service that accesses the user location and provides it to the fragments, we need to add it in the manifests file.-->
+        <service android:name=".services.TrackingService"
+            android:foregroundServiceType="location"/>
+
         <!--For using Google Maps, we need the following meta-data:
             *_ the version of the Google Play Services (included in the dependencies...somewhere)
             *_ the Google Maps API key, which needs to be generated in the website https://console.cloud.google.com/, inside a project, in the
