@@ -4,6 +4,13 @@
     android:id="@+id/nav_graph"
     app:startDestination="@+id/setupFragment">
 
+    <!--We can create a global action that leads to the TrackingFragment, which will be used to open it when we have an ongoing run in a
+    foreground service and click the notification.
+    The app:launchSingleTop parameter set to true makes sure that we don't create a new instance of the activity with this action.-->
+    <action android:id="@+id/action_global_trackingFragment"
+        app:destination="@+id/trackingFragment"
+        app:launchSingleTop="true"/>
+
     <!--We will only have navigation actions from the setup to the run fragment, from the run fragment to the tracking and vice-versa. The
     statistics and settings will be accessible by a bottom menu navigation.-->
     <fragment

@@ -1,10 +1,25 @@
 package com.example.runningappdaggercourse.services
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.NotificationManager.IMPORTANCE_LOW
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.content.Context
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import com.example.runningappdaggercourse.R
 import com.example.runningappdaggercourse.other.Constants.ACTION_PAUSE_SERVICE
+import com.example.runningappdaggercourse.other.Constants.ACTION_SHOW_TRACKING_FRAGMENT
 import com.example.runningappdaggercourse.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.example.runningappdaggercourse.other.Constants.ACTION_STOP_SERVICE
+import com.example.runningappdaggercourse.other.Constants.NOTIFICATION_CHANNEL_ID
+import com.example.runningappdaggercourse.other.Constants.NOTIFICATION_CHANNEL_NAME
+import com.example.runningappdaggercourse.other.Constants.NOTIFICATION_ID
+import com.example.runningappdaggercourse.ui.MainActivity
 import timber.log.Timber
 
 /**Services are a component that can perform long-running operation (such as handle network transactions, play music, edit files, interact with
@@ -13,6 +28,11 @@ import timber.log.Timber
  * By default, Services still run in the main thread, so it needs to create a new thread if it's going to do intensive/blocking operations.
  * Commonly, service classes inherit from Service or from IntentService. In this case, as we want to observe LiveData in the service (and we
  * have to provide a LifecycleOwner to the observe method), we need to use LifecycleService.
+ *
+ * Service types are foreground (the operation that the service runs is perceptible to the user, needing to appear as a notification as well,
+ * having the benefit of not being able to be killed by the OS), background (the service performs an action in the background, which can be
+ * killed by the OS if it needs memory) and bound (a service that is bound to the app component(s) that called bindService, establishing a
+ * client-server relation for requesting and returning data, and also is a service that is destroyed when no component is bound to it anymore).
  *
  * For this service, we will need to have the communication from activities/fragments to the service (for them to send commands to it) and also
  * communication from the service back to them (to return the user coordinates to TrackingFragment, for example). For sending commands to the
@@ -25,6 +45,7 @@ import timber.log.Timber
  */
 class TrackingService: LifecycleService() {
 
+    var isFirstRun = true
     /**The onStartCommand is called everytime the service receives a command (an Intent with an action attached to it, that was sent through
      * the startService method). Here, we check if the received intent is not null and then check the action to be executed.
      */
@@ -32,7 +53,12 @@ class TrackingService: LifecycleService() {
         intent?.let {
             when(it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
-                    Timber.d("Started or resumed service.")
+                    if(isFirstRun) {
+                        startForegroundService()
+                        isFirstRun = false
+                    } else {
+                        Timber.d("Resumed service.")
+                    }
                 }
                 ACTION_PAUSE_SERVICE -> {
                     Timber.d("Paused service.")
@@ -44,4 +70,54 @@ class TrackingService: LifecycleService() {
         }
         return super.onStartCommand(intent, flags, startId)
     }
+
+    /**To make a foreground service, we need to configure it as so and also display the notification. For Android Oreo and later, we also
+     * need to create a notification channel to display a notification (notification channels are the categories of notifications, which
+     * allow the user to choose to display or to hide). To create a Notification object, we need to use the Builder pattern, with
+     * NotificationCompat.Builder. Then, we pass the notification id and the Notification object to the startForeground function.
+     */
+    private fun startForegroundService() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager     //NotificationManager is a Android framework service that allows us to show our notifications.
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel(notificationManager)
+        }
+
+        //We use NotificationCompat.Builder to configure the Notification object to be created.
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)     //To create the Builder, we specify the context and the ID of the notification channel it's going to belong to.
+            .setAutoCancel(false)               //Auto-cancel as false: the notification doesn't disappear if the user clicks on it.
+            .setOngoing(true)                   //Ongoing as true: the notification can't be swiped away.
+            .setSmallIcon(R.drawable.ic_directions_run_black_24dp)
+            .setContentTitle("Running App")
+            .setContentText("00:00:00")
+            .setContentIntent(getMainActivityPendingIntent())       //Configures the PendingIntent to be sent when the notification is clicked (check the explanation on the getMainActivityPendingIntent method).
+
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+    }
+
+    /**PendingIntent is a description of an Intent that can be provided to other applications. When we give a PendingIntent to other
+     * applications, they can execute that Intent as if they were the application itself. In this case, we are creating a PendingActivity
+     * so that the notification can send an Intent in the app itself. We are using the getActivity method and providing an Intent that
+     * indicates the activity we want. We also set the action of the intent to indicate that we want to load the TrackingFragment as soon
+     * as the activity opens, which needs to be dealt in the MainActivity.
+     */
+    private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
+        this,
+        0,
+        Intent(this,MainActivity::class.java).also {
+            it.action = ACTION_SHOW_TRACKING_FRAGMENT
+        },
+        FLAG_UPDATE_CURRENT                 //Setting this flag means that when we launch a PendingIntent and it already exists, it will only update it, instead of restarting it.
+    )
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME,
+            IMPORTANCE_LOW                  //We need to choose IMPORTANCE_LOW here, because we need to show a notification every second to update the time and any importance level above low would trigger a sound notification.
+        )
+        notificationManager.createNotificationChannel(channel)
+    }
+
 }
